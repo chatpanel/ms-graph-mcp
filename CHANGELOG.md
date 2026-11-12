@@ -31,6 +31,13 @@ change between minor versions; breaking changes are called out explicitly.
 
 ### Fixed
 
+- **A personal account can sign in with the defaults.** With `GRAPH_MCP_TENANT_ID=consumers` and no
+  `GRAPH_MCP_SCOPES`, the server asks for `User.Read, Mail.Read, Calendars.Read, Files.Read.All,
+  Notes.Read` — the work-only `Chat.Read` in the general default made Microsoft refuse the consent,
+  reported as "the code you entered has expired". An explicit `GRAPH_MCP_SCOPES` is kept as given.
+- **A toolset name in `GRAPH_MCP_SCOPES` is refused with the fix.** `GRAPH_MCP_SCOPES=all` used to
+  reach Microsoft as a permission named `all` ("The scope 'all …' does not exist"); now the server
+  says at launch, and on every tool call, that `all` belongs in `GRAPH_MCP_TOOLSETS`.
 - `notes_list_sections` interpolated `notebook_id` into the Graph path without `validate_graph_id`.
   Every OneNote id is validated now, and a bad id or a Graph failure comes back as a structured
   error from `errors.py` rather than a raised exception.

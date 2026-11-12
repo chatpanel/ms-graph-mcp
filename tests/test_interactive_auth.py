@@ -156,6 +156,19 @@ class TestStdioContext:
         assert context["access_token"] == ""
         assert "token_provider" not in context
 
+    def test_a_toolset_name_in_scopes_is_refused_with_the_fix(self, monkeypatch, capsys):
+        """`GRAPH_MCP_SCOPES=all` reached Microsoft as a scope named 'all'."""
+        from ms_graph_mcp.interactive_auth import InteractiveAuthError
+
+        monkeypatch.delenv("GRAPH_MCP_ACCESS_TOKEN", raising=False)
+        set_config(
+            GraphMcpConfig(_env_file=None, client_id="app-1", tenant_id="consumers", scopes="all")
+        )
+        context = _build_context()
+        assert "GRAPH_MCP_TOOLSETS" in capsys.readouterr().err
+        with pytest.raises(InteractiveAuthError, match="toolset name"):
+            context["token_provider"]()
+
     def test_write_scope_comes_from_the_environment(self, monkeypatch):
         monkeypatch.setenv("GRAPH_MCP_ACCESS_TOKEN", "t")
         monkeypatch.setenv("GRAPH_MCP_WRITE_SCOPE", "true")

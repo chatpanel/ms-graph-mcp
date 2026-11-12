@@ -130,6 +130,28 @@ Then, on the new app:
 Copy the **Application (client) ID** and **Directory (tenant) ID** from the Overview page. That is
 everything you need.
 
+### A personal Microsoft account (outlook.com, hotmail.com, live.com)
+
+Register the app the same way with **Supported account types:** *Personal Microsoft accounts only*,
+and run with:
+
+```
+GRAPH_MCP_CLIENT_ID=<your application (client) id>
+GRAPH_MCP_TENANT_ID=consumers
+GRAPH_MCP_SCOPES=User.Read,Mail.Read,Calendars.Read,Files.Read.All,Notes.Read
+GRAPH_MCP_TOOLSETS=core,notes
+GRAPH_MCP_FORCE_DEVICE_CODE=true
+```
+
+- **The scope list matters.** A personal account cannot consent to work-only permissions — Teams'
+  `Chat.Read` above all — and Microsoft reports the refused consent as *"The code you entered has
+  expired"*, which it was not. With `GRAPH_MCP_TENANT_ID=consumers` and no `GRAPH_MCP_SCOPES`, the
+  server now asks for exactly the list above.
+- **`GRAPH_MCP_SCOPES` takes permission names, not toolset names.** `all`, `core` or `notes` belong
+  in `GRAPH_MCP_TOOLSETS`; in `GRAPH_MCP_SCOPES` they are refused with a message saying so (Microsoft
+  would answer *"The scope 'all …' does not exist"*).
+- `notes` in the toolsets is what turns the OneNote tools on — they are not in `core`.
+
 ## Configure your MCP client
 
 Every MCP client that speaks stdio takes the same three things — a command, its arguments, and an
@@ -274,7 +296,7 @@ Two settings get you running; everything else has a working default.
 |---|---|
 | `GRAPH_MCP_CLIENT_ID` | Entra application (client) id. Enables interactive sign-in. |
 | `GRAPH_MCP_TENANT_ID` | Entra directory (tenant) id. Defaults to `common`. |
-| `GRAPH_MCP_SCOPES` | Comma-separated delegated scopes to request. Defaults to a read-only set. |
+| `GRAPH_MCP_SCOPES` | Comma-separated delegated permission names to request (`Notes.Read`, not a toolset name). Defaults to a read-only set — for `consumers`, the set a personal account can grant. |
 | `GRAPH_MCP_TOOLSETS` | Which tool profiles to expose. Defaults to `core`. See below. |
 | `GRAPH_MCP_WRITE_SCOPE` | `true` to expose the 23 write tools. **Default off.** |
 | `GRAPH_MCP_READ_ONLY` | `true` to remove the write tier from the deployment entirely. |

@@ -48,6 +48,20 @@ def _build_context() -> dict:
         context["access_token"] = static_token
         return context
 
+    if cfg.client_id and cfg.scopes_problem:
+        # Said at launch AND on every tool call, so it reaches whoever is looking.
+        print(f"\n[ms-graph-mcp] {cfg.scopes_problem}\n", file=sys.stderr, flush=True)
+        problem = cfg.scopes_problem
+
+        def _refuse() -> str:
+            from ms_graph_mcp.interactive_auth import InteractiveAuthError
+
+            raise InteractiveAuthError(problem)
+
+        context["token_provider"] = _refuse
+        context["access_token"] = ""
+        return context
+
     if cfg.client_id:
         from ms_graph_mcp.interactive_auth import InteractiveTokenProvider
 

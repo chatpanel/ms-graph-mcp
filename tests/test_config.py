@@ -126,3 +126,23 @@ def test_obo_scopes_default_and_override():
         "https://graph.microsoft.com/Mail.Read",
         "https://graph.microsoft.com/Files.Read.All",
     ]
+
+
+def test_a_personal_account_server_asks_only_for_what_it_can_grant():
+    """Chat.Read in the default fails a personal account's consent — reported as an expired code."""
+    from ms_graph_mcp.config import PERSONAL_ACCOUNT_SCOPES
+
+    personal = GraphMcpConfig(_env_file=None, tenant_id="consumers")
+    assert personal.scopes_list == PERSONAL_ACCOUNT_SCOPES.split(",")
+    assert "Chat.Read" not in personal.scopes_list
+    work = GraphMcpConfig(_env_file=None, tenant_id="contoso.onmicrosoft.com")
+    assert "Chat.Read" in work.scopes_list
+    chosen = GraphMcpConfig(_env_file=None, tenant_id="consumers", scopes="User.Read,Chat.Read")
+    assert chosen.scopes_list == ["User.Read", "Chat.Read"], "a person's own choice is kept"
+
+
+def test_a_toolset_name_is_not_a_scope():
+    assert "GRAPH_MCP_TOOLSETS" in GraphMcpConfig(_env_file=None, scopes="all").scopes_problem
+    assert "'core', 'notes'" in GraphMcpConfig(_env_file=None, scopes="core,notes").scopes_problem
+    assert GraphMcpConfig(_env_file=None, scopes="User.Read,Notes.Read").scopes_problem == ""
+    assert GraphMcpConfig(_env_file=None).scopes_problem == ""

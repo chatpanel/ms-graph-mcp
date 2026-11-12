@@ -26,6 +26,10 @@ from ms_graph_mcp.entra import AuthConfig
 # Microsoft Graph resource — the audience an OBO Graph token carries.
 GRAPH_AUDIENCE = "https://graph.microsoft.com"
 
+# What a personal Microsoft account can consent to, read-only: the default for
+# the ``consumers`` tenant when GRAPH_MCP_SCOPES is not set.
+PERSONAL_ACCOUNT_SCOPES = "User.Read,Mail.Read,Calendars.Read,Files.Read.All,Notes.Read"
+
 
 class GraphMcpConfig(BaseSettings):
     """Runtime settings for the Graph tool surface + MCP server."""
@@ -179,7 +183,36 @@ class GraphMcpConfig(BaseSettings):
 
     @property
     def scopes_list(self) -> list[str]:
-        return [s.strip() for s in self.scopes.split(",") if s.strip()]
+        # A personal account (the ``consumers`` tenant) cannot consent to the
+        # work-only scopes in the default set — Teams' Chat.Read above all — and
+        # Microsoft reports that refused consent as "the code you entered has
+        # expired". So when nobody chose scopes, a personal-account server asks
+        # only for what a personal account can grant.
+        raw = self.scopes
+        if "scopes" not in self.model_fields_set and (self.tenant_id or "").lower() == "consumers":
+            raw = PERSONAL_ACCOUNT_SCOPES
+        return [s.strip() for s in raw.split(",") if s.strip()]
+
+    @property
+    def scopes_problem(self) -> str:
+        """Why ``GRAPH_MCP_SCOPES`` cannot work, or ``""``.
+
+        The commonest mistake is a toolset name — ``all``, ``core``, ``notes`` —
+        which belongs in ``GRAPH_MCP_TOOLSETS``. Sent to Microsoft it fails as
+        "The scope 'all …' does not exist", naming neither variable.
+        """
+        from ms_graph_mcp.toolsets import ALL_PROFILE, PROFILES
+
+        names = set(PROFILES) | {ALL_PROFILE}
+        wrong = [s for s in self.scopes_list if s.lower() in names]
+        if not wrong:
+            return ""
+        return (
+            f"GRAPH_MCP_SCOPES lists {', '.join(repr(w) for w in wrong)}, which "
+            f"{'is a toolset name' if len(wrong) == 1 else 'are toolset names'} — those go in "
+            "GRAPH_MCP_TOOLSETS. GRAPH_MCP_SCOPES takes Microsoft permission names, e.g. "
+            f"{PERSONAL_ACCOUNT_SCOPES}; leave it unset for the default."
+        )
 
     @property
     def obo_scopes_list(self) -> list[str]:
