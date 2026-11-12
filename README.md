@@ -287,7 +287,7 @@ For running it as a service, see
 
 ## Toolset profiles
 
-85 tools is a lot to put in front of a model. `GRAPH_MCP_TOOLSETS` selects named profiles, each a
+87 tools is a lot to put in front of a model. `GRAPH_MCP_TOOLSETS` selects named profiles, each a
 group of namespaces:
 
 | Profile | Namespaces | Read tools | Approx. tokens |
@@ -301,9 +301,9 @@ group of namespaces:
 | `people` | people | 5 | ~750 |
 | `directory` | directory, people | 12 | ~1,900 |
 | `tasks` | tasks | 5 | ~830 |
-| `notes` | notes | 4 | ~570 |
+| `notes` | notes | 6 | ~1,350 |
 | `search` | search | 1 | ~290 |
-| `all` | everything | 53 | ~9,200 |
+| `all` | everything | 55 | ~10,000 |
 
 Combine them with commas:
 
@@ -326,13 +326,13 @@ Three tiers, one auth seam.
 
 | Tier | Count | Exposed when | Examples |
 |---|---:|---|---|
-| **Read** | 53 | always | `calendar_list_upcoming_events`, `mail_search`, `meetings_get_transcript`, `files_search`, `search_query` |
+| **Read** | 55 | always | `calendar_list_upcoming_events`, `mail_search`, `meetings_get_transcript`, `files_search`, `search_query` |
 | **Write** | 23 | `X-Write-Scope: true` | `mail_send`, `calendar_create_event`, `files_create_sharing_link`, `tasks_complete_todo` |
 | **Internal** | 9 | `X-Internal-Scope: true`, machine principal only | `graph_request` passthrough, drive walk/upload, message attachments, app-only `probe_graph_access` |
 
-The internal tier is not part of the agent surface. A model sees **76 agent-visible** tools.
+The internal tier is not part of the agent surface. A model sees **78 agent-visible** tools.
 By namespace: mail 11 · tasks 11 · calendar 10 · files 10 · chat 8 · directory 7 · meetings 7 ·
-people 6 · notes 5 · search 1.
+notes 7 · people 6 · search 1.
 
 Tool names are namespaced by Graph permission family rather than by Microsoft product, because real
 questions cross product boundaries — `files_` covers OneDrive *and* SharePoint document libraries,

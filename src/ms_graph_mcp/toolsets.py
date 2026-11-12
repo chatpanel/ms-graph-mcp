@@ -1,4 +1,4 @@
-"""Named toolset profiles, so a client sees the tools it needs and not 85 of them.
+"""Named toolset profiles, so a client sees the tools it needs and not 87 of them.
 
 A profile is a set of **namespace prefixes**, not a hand-maintained list of tool
 names. Namespaces already track Graph permission families (`mail_`, `calendar_`,

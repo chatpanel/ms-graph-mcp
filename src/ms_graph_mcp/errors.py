@@ -32,6 +32,7 @@ __all__ = [
     "not_found",
     "scope_denied",
     "throttled",
+    "too_large",
     "upstream_error",
 ]
 
@@ -110,6 +111,23 @@ def invalid_arguments(message: str, **extra: Any) -> GraphToolError:
     what the model should do next.
     """
     return _err("INVALID_ARGUMENTS", message, retryable=True, **extra)
+
+
+def too_large(what: str, *, size: int | None, limit: int) -> GraphToolError:
+    """The resource exists but is bigger than this tool will return.
+
+    Terminal: the size will not change on a retry, and no argument lifts the cap.
+    ``size`` is ``None`` when Graph did not declare a length up front.
+    """
+    actual = f"{size} bytes" if size is not None else f"more than {limit} bytes"
+    return _err(
+        "TOO_LARGE",
+        f"{what} is {actual}, over this tool's {limit}-byte limit, so it was not downloaded. "
+        "Do not retry this call.",
+        retryable=False,
+        size=size,
+        limit=limit,
+    )
 
 
 def upstream_error(status: int | None, detail: str = "") -> GraphToolError:

@@ -1,6 +1,6 @@
 # Testing
 
-880 tests, all offline. No Graph call is ever made, no network is touched, and the whole suite runs
+941 tests, all offline. No Graph call is ever made, no network is touched, and the whole suite runs
 in under two seconds — so there is no reason to skip it before pushing.
 
 ```bash
@@ -44,7 +44,7 @@ Two pytest settings shape how tests are written:
 
 ### `test_tools_contract.py` — drift, on every tool at once
 
-An 85-tool surface only stays coherent if drift breaks the build. This file parametrizes over the
+An 87-tool surface only stays coherent if drift breaks the build. This file parametrizes over the
 whole registry, so a new tool is held to the same standard as the first one without anybody
 remembering to add a test. It enforces that every tool declares annotations, that descriptions are
 200–400 characters and differentiate the tool from its neighbours, and that failures come from

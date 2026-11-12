@@ -329,6 +329,71 @@ async def graph_try_get(
             )
 
 
+class GraphPayloadTooLarge(Exception):
+    """A binary response was larger than the caller's cap, so it was not read.
+
+    ``size`` is the length Graph declared, or ``None`` when it sent no
+    ``Content-Length`` and the cap was crossed while streaming.
+    """
+
+    def __init__(self, size: int | None, limit: int) -> None:
+        self.size = size
+        self.limit = limit
+        super().__init__(f"response is {size or 'more than ' + str(limit)} bytes, cap is {limit}")
+
+
+async def graph_get_bytes(
+    access_token: str,
+    path: str,
+    *,
+    max_bytes: int,
+    timeout_seconds: float = 60.0,
+) -> tuple[bytes, str]:
+    """GET a binary Graph resource → ``(bytes, content_type)``, never more than ``max_bytes``.
+
+    For bodies that are neither JSON nor text — a OneNote image or attachment
+    (``/onenote/resources/{id}/$value``). :func:`graph_get_text` would decode the
+    bytes as text, and :func:`graph_try_get` reads the whole body before anyone
+    can look at its size. This streams, so an oversized resource is refused from
+    its ``Content-Length`` — or, failing that, the moment the cap is crossed —
+    rather than buffered in full first.
+
+    Raises ``httpx2.HTTPStatusError`` on a non-success status and
+    :class:`GraphPayloadTooLarge` over the cap.
+    """
+    url = f"{_GRAPH_BASE}{path}"
+    headers = _headers(access_token)
+    headers["Accept"] = "*/*"
+    with _tracer.start_as_current_span(
+        "graph.request",
+        attributes={"http.method": "GET", "http.url": url},
+    ) as span:
+        async with httpx2.AsyncClient(
+            verify=not get_config().disable_ssl_verify,
+            timeout=httpx2.Timeout(timeout_seconds),
+        ) as client:
+            logger.info("[Graph] GET %s (bytes)", path)
+            async with client.stream("GET", url, headers=headers) as resp:
+                span.set_attribute("http.status_code", resp.status_code)
+                if not resp.is_success:
+                    await resp.aread()
+                    span.set_status(trace.StatusCode.ERROR, f"HTTP {resp.status_code}")
+                    _log_error(resp)
+                    resp.raise_for_status()
+                declared = resp.headers.get("content-length", "")
+                if declared.isdigit() and int(declared) > max_bytes:
+                    raise GraphPayloadTooLarge(int(declared), max_bytes)
+                chunks: list[bytes] = []
+                total = 0
+                async for chunk in resp.aiter_bytes():
+                    total += len(chunk)
+                    if total > max_bytes:
+                        raise GraphPayloadTooLarge(None, max_bytes)
+                    chunks.append(chunk)
+                logger.info("[Graph] GET %s → %s (%d bytes)", path, resp.status_code, total)
+                return b"".join(chunks), resp.headers.get("content-type", "")
+
+
 async def graph_post_raw(
     access_token: str,
     path: str,

@@ -109,9 +109,11 @@ READ_TOOL_NAMES: tuple[str, ...] = (
     "files_get_group_drive",
     # onenote
     "notes_list_notebooks",
+    "notes_list_section_groups",
     "notes_list_sections",
     "notes_list_pages",
     "notes_get_page_content",
+    "notes_get_resource",
     # tasks
     "tasks_list_planner_plans",
     "tasks_list_planner_buckets",

@@ -8,6 +8,34 @@ change between minor versions; breaking changes are called out explicitly.
 
 ## [Unreleased]
 
+### Added
+
+- **A whole OneNote library is now reachable, read-only.** Everything is opt-in: a caller sending
+  today's arguments gets today's result shape.
+  - `notes_list_section_groups` lists the section groups in a notebook or in another section group
+    (exactly one of `notebook_id` / `section_group_id`), so nested sections are no longer invisible.
+    `notes_list_sections` takes `section_group_id` as the alternative to `notebook_id`.
+  - Paging. `notes_list_notebooks`, `notes_list_sections`, `notes_list_section_groups` and
+    `notes_list_pages` take `page_token`: `""` for the first page, then the returned
+    `next_page_token`, and the result becomes `{items, next_page_token}` (`null` when done). The
+    token is Graph's `@odata.nextLink`, followed through `graph_get_url` only after it is checked to
+    be the same OneNote collection the caller is listing — never another workload, section or host.
+    `notes_list_pages` accepts `max_results` up to Graph's 100.
+  - `notes_get_page_content` takes `offset` and returns `offset` and `next_offset`, so a page of any
+    length reads back in 50,000-character chunks.
+  - `notes_get_resource` returns an image or file embedded in a page, base64 with its MIME type, by
+    the id in its `…/onenote/resources/{id}/$value` URL. Refused over 5 MB with a new `TOO_LARGE`
+    error, from `Content-Length` or while streaming, before the body is buffered.
+- `client.graph_get_bytes` — a streaming binary GET with a size cap, for bodies that are neither
+  JSON nor text.
+
+### Fixed
+
+- `notes_list_sections` interpolated `notebook_id` into the Graph path without `validate_graph_id`.
+  Every OneNote id is validated now, and a bad id or a Graph failure comes back as a structured
+  error from `errors.py` rather than a raised exception.
+- `notes_list_pages` `max_results` is bounded to 1–100, the range Graph accepts.
+
 ### Changed
 
 - **One HTTP stack, not two.** The Graph client moves from `httpx` to `httpx2`, the distribution

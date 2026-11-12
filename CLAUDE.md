@@ -2,7 +2,7 @@
 
 Guidance for Claude Code working in this repository.
 
-`ms-graph-mcp` is a Model Context Protocol server for Microsoft Graph — 85 tools across calendar,
+`ms-graph-mcp` is a Model Context Protocol server for Microsoft Graph — 87 tools across calendar,
 email, meetings, Teams chat, files, people, contacts, directory, tasks, OneNote and
 search, served over stdio or Streamable HTTP. Tool names are namespaced by Graph permission family (`mail_`, `files_`,
 `calendar_`, `meetings_`, `chat_`, `directory_`, `people_`, `tasks_`, `notes_`, `search_`).
@@ -115,7 +115,7 @@ Any caller-supplied value interpolated into a Graph path or an OData `$filter` m
 
 ### Tool quality rules — enforced by `tests/test_tools_contract.py`
 
-These are tests, not preferences. An 85-tool surface only stays coherent if drift breaks the build.
+These are tests, not preferences. An 87-tool surface only stays coherent if drift breaks the build.
 
 - **Every tool declares annotations.** Pass one of the five presets from `tooling.py`:
   `READ_ONLY`, `WRITE_CREATE`, `WRITE_UPDATE`, `WRITE_SEND`, `WRITE_DESTRUCTIVE`. A tool that
@@ -140,7 +140,7 @@ These are tests, not preferences. An 85-tool surface only stays coherent if drif
 
 | Tier | Count | Exposed when |
 |---|---:|---|
-| Read | 53 | always |
+| Read | 55 | always |
 | Write | 23 | `X-Write-Scope: true`, and only when `GRAPH_MCP_READ_ONLY` is off |
 | Internal | 9 | shared-secret machine principal **and** `X-Internal-Scope: true` |
 

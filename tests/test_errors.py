@@ -18,6 +18,7 @@ from ms_graph_mcp.errors import (
     not_found,
     scope_denied,
     throttled,
+    too_large,
     upstream_error,
 )
 
@@ -70,7 +71,7 @@ class TestRetryability:
 
 
 class TestGraphErrorMapping:
-    """One place translates HTTP status to meaning, so 85 tools need not."""
+    """One place translates HTTP status to meaning, so 87 tools need not."""
 
     def test_403_becomes_scope_denied_with_the_named_scope(self):
         err = graph_error_response(
@@ -133,6 +134,7 @@ class TestShape:
             not_found("thing"),
             conflict("thing"),
             invalid_arguments("nope"),
+            too_large("thing", size=None, limit=10),
             upstream_error(500),
         ):
             assert {"error", "message", "retryable"} <= err.keys()

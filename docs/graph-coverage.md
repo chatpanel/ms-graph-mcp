@@ -11,7 +11,7 @@ Graph from consideration:
 2. **v1.0 only.** `/beta` endpoints are excluded. Microsoft does not support them in production and
    changes them without notice.
 
-Current surface: **85 tools** — 53 read, 23 write, 9 internal.
+Current surface: **87 tools** — 55 read, 23 write, 9 internal.
 
 The 9 internal tools are not part of the agent surface; they are reachable only by a shared-secret
 machine principal. The number that matters to an agent is **76**.
@@ -35,7 +35,7 @@ Counts are agent-visible tools — read plus write.
 | Files (OneDrive/SharePoint) | 10 | ●●●○○ | Discovery, read, upload, update, folders, sharing links. No move/copy/delete, no delta. |
 | Directory (Entra ID) | 7 | ●●●○○ | Solid core. Missing direct reports, transitive membership, photos. |
 | People & contacts | 6 | ●●●●○ | Relevance search, profile, and the Outlook address book. |
-| OneNote | 5 | ●●●●○ | Notebooks, sections, page list, page read, page create. No page update. |
+| OneNote | 7 | ●●●●○ | Notebooks, section groups, sections, paged page list, chunked page read, embedded images, page create. No page update. |
 | Unified search | 1 | ●●●●○ | `POST /search/query` across mail, events, files, sites, lists and people. |
 | **SharePoint sites & lists** | **0** | ○○○○○ | **No structured access.** Reachable only as search hits. The largest remaining gap. |
 | Presence | 0 | ○○○○○ | Absent. |
@@ -267,17 +267,20 @@ Three different data sources, deliberately not merged:
 
 ---
 
-### OneNote — 5 tools
+### OneNote — 7 tools
 
-**Read:** `notes_list_notebooks`, `notes_list_sections`, `notes_list_pages`,
-`notes_get_page_content`.
+**Read:** `notes_list_notebooks`, `notes_list_section_groups`, `notes_list_sections`,
+`notes_list_pages`, `notes_get_page_content`, `notes_get_resource`.
 **Write:** `notes_create_page`.
+
+The read tools walk a whole library: section groups nest and are listed per notebook or per
+group, every list takes an opt-in `page_token` cursor, page content reads in 50,000-character
+chunks by `offset`, and `notes_get_resource` returns a page's images (up to 5 MB each).
 
 | Gap | Endpoint |
 |---|---|
 | Update page content | `PATCH /me/onenote/pages/{id}/content` |
 | Delete page | `DELETE /me/onenote/pages/{id}` |
-| Section groups | `GET /me/onenote/sectionGroups` |
 | Copy page / section | `POST .../copyToSection`, `copyToNotebook` |
 | Group / SharePoint-hosted notebooks | `/groups/{id}/onenote/…`, `/sites/{id}/onenote/…` |
 

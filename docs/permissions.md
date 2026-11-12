@@ -18,7 +18,7 @@ permissions → Microsoft Graph → Delegated** in the portal. The two must agre
 requested but not consented, sign-in still succeeds and the tool later returns `SCOPE_DENIED`
 naming the one that is missing.
 
-### Read-only — 53 tools, nothing can be changed or sent
+### Read-only — 55 tools, nothing can be changed or sent
 
 ```
 Calendars.Read,Calendars.Read.Shared,Calendars.ReadBasic,Channel.ReadBasic.All,ChannelMessage.Read.All,Chat.Read,Contacts.Read,Files.Read,Files.Read.All,Group.Read.All,GroupMember.Read.All,Mail.Read,Notes.Read,OnlineMeetingArtifact.Read.All,OnlineMeetingTranscript.Read.All,OnlineMeetings.Read,People.Read,Sites.Read.All,Tasks.Read,Team.ReadBasic.All,User.Read,User.Read.All
@@ -86,10 +86,12 @@ carries only what was originally granted.
 | `meetings_list_transcripts` | `OnlineMeetingTranscript.Read.All` | List the transcripts available for one online meeting, given an online meeting id from meetings_get_from_join_url. |
 | `meetings_list_with_transcripts` | `Calendars.Read`, `OnlineMeetingTranscript.Read.All` | List recent meetings and flag which ones actually have a transcript, checking each concurrently. |
 | **notes** | | |
-| `notes_get_page_content` | `Notes.Read` | Read the contents of one OneNote page, given a page id from notes_list_pages. |
-| `notes_list_notebooks` | `Notes.Read` | List the signed-in user's OneNote notebooks, with id, name, last-modified date and web URL. |
-| `notes_list_pages` | `Notes.Read` | List the pages in one OneNote section, with id, title, creation date and web URL. |
-| `notes_list_sections` | `Notes.Read` | List the sections inside one OneNote notebook, with id, name and last-modified date. |
+| `notes_get_page_content` | `Notes.Read` | Read one OneNote page's body as HTML, how OneNote stores it, given a page id from notes_list_pages. |
+| `notes_get_resource` | `Notes.Read` | Download one image or file embedded in a OneNote page, as base64 with its MIME type. |
+| `notes_list_notebooks` | `Notes.Read` | List the signed-in user's OneNote notebooks, owned and shared, with id, name, last-modified date and web URL. |
+| `notes_list_pages` | `Notes.Read` | List the pages in one OneNote section, newest-modified first, with id, title, creation date and web URL. |
+| `notes_list_section_groups` | `Notes.Read` | List the section groups (folders of sections) in a OneNote notebook or in another section group (exactly one of notebook_id, section_group_id), with id, name and last-modified date. |
+| `notes_list_sections` | `Notes.Read` | List the sections in a OneNote notebook or section group (exactly one of notebook_id, section_group_id), with id, name and last-modified date. |
 | **people** | | |
 | `people_get` | `User.Read.All` | Look up one person in the organisation by their exact email address and return their profile: display name, job title, department, office location and phone numbers. |
 | `people_get_my_profile` | `User.Read` | Get the signed-in user's own profile — their name, email address, job title, department and office. |
